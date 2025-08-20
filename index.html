@@ -508,6 +508,35 @@
         font-weight: 600;
       }
 
+      /* Uploader URL option */
+      .or-sep {
+        margin: 16px 0 8px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .url-loader {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+
+      .url-input {
+        flex: 1 1 320px;
+        max-width: 100%;
+        background: #ffffff;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-family: inherit;
+        font-size: 14px;
+      }
+
       /* GitHub logo styles */
       .github-link {
         position: fixed;
@@ -548,6 +577,8 @@
           responses: new Map(),
           revealed: new Set(),
         };
+
+        const DEFAULT_URL = "https://quiz.qot.app/example.quiz";
 
         /** DOM refs */
         const refs = {};
@@ -1315,6 +1346,8 @@
           refs.uploadStatus = $("#uploadStatus");
           refs.uploader = $("#uploader");
           refs.spinner = $("#spinner");
+          refs.urlInput = $("#urlInput");
+          refs.urlLoadBtn = $("#urlLoadBtn");
 
           refs.prevBtn.addEventListener("click", onPrev);
           refs.nextBtn.addEventListener("click", onNext);
@@ -1338,6 +1371,27 @@
                 refs.uploadStatus.textContent = "Failed to read file.";
             };
             reader.readAsText(file);
+          }
+
+          async function loadFromUrl(inputUrl) {
+            const raw = String(inputUrl || "").trim();
+            const url = raw || DEFAULT_URL;
+            if (refs.uploadStatus)
+              refs.uploadStatus.textContent = "Fetching " + url + "…";
+            try {
+              refs.spinner.classList.remove("hidden");
+              const response = await fetch(url, { cache: "no-cache" });
+              if (!response.ok)
+                throw new Error("HTTP " + response.status + " " + response.statusText);
+              const text = await response.text();
+              startQuizFromText(String(text || ""));
+              if (refs.uploadStatus) refs.uploadStatus.textContent = "";
+            } catch (err) {
+              refs.spinner.classList.add("hidden");
+              if (refs.uploadStatus)
+                refs.uploadStatus.textContent =
+                  "Failed to fetch URL. " + (err && err.message ? err.message : "");
+            }
           }
 
           if (refs.fileInput) {
@@ -1371,6 +1425,22 @@
                 e.dataTransfer.files &&
                 e.dataTransfer.files[0];
               if (file) loadFile(file);
+            });
+          }
+
+          if (refs.urlLoadBtn) {
+            refs.urlLoadBtn.addEventListener("click", () => {
+              const val = refs.urlInput && refs.urlInput.value;
+              loadFromUrl(val);
+            });
+          }
+          if (refs.urlInput) {
+            refs.urlInput.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const val = refs.urlInput && refs.urlInput.value;
+                loadFromUrl(val);
+              }
             });
           }
 
@@ -1450,8 +1520,7 @@
             aria-label="Choose a questions file to start the quiz"
           >
             <div class="dz-icon">↑</div>
-            <div class="dz-title">Drag & drop your file here</div>
-            <div class="dz-subtitle">or click to choose a file</div>
+            <div class="dz-title">Drag & drop your question file here</div>
           </div>
           <input
             id="fileInput"
@@ -1468,6 +1537,18 @@
               border: 0;
             "
           />
+          <div class="or-sep">or</div>
+          <div class="url-loader">
+            <input
+              id="urlInput"
+              class="url-input"
+              type="url"
+              inputmode="url"
+              placeholder="https://quiz.qot.app/example.quiz"
+              aria-label="Quiz file URL"
+            />
+            <button id="urlLoadBtn" type="button">Load</button>
+          </div>
           <div id="uploadStatus" class="status" style="margin-top: 12px"></div>
         </div>
         <div class="controls" style="justify-content: flex-end">
