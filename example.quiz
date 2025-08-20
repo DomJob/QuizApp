@@ -1,32 +1,41 @@
-Source: Course A | Module 1 | Topic A | Section 1
+Source: Example Quiz | Single-answer question
 Question: What is 2+2?
 [ ] 1
 [ ] 2
 [ ] 3
 [x] 4
 -----
-Source: Course A | Module 1 | Topic A | Section 2
+Source: Example Quiz | Multiple-choice question
 Question: What value of **x** solves `x^2 = 4`?
 [x] -2 
 [x] 2
 [ ] 3
 [ ] 4
 -----
-Source: Course A | Module 1 | Topic A | Section 3
+Source: Example Quiz | Term mapping question
 Question: Match the numbers together.
 [two] 2
 [3] three
 [4] four
 [five] 5
 -----
-Source: Course A | Module 1 | Topic A | Section 4
-Question: 5 is greater than 4.
-[x] True
-[ ] False
------
-Source: Course A | Module 1 | Topic A | Section 5
+Source: Example Quiz | Ordered list question
 Question: Sort the numbers ascending
 [1] 5
 [2] 8
 [3] 9
 [4] 15
+-----
+Source: Example Quiz | Multi-line question
+Question: Given the following code:
+
+```
+int a=2;
+int b=3;
+int c = a+b;
+```
+Which boolean statement evaluates to true?
+[x] `c == 5`
+[ ] `c < 4`
+[ ] `c == -1`
+[ ] `c != 5`

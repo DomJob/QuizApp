@@ -24,7 +24,8 @@
           /```(\w+)?\s*([\s\S]*?)```/g,
           (match, lang, code) => {
             const placeholder = `__CODEBLOCK_${codeBlocks.length}__`;
-            codeBlocks.push({ lang: lang || "", code: code });
+            // Trim extra whitespace from code blocks to prevent unwanted line breaks
+            codeBlocks.push({ lang: lang || "", code: code.trim() });
             return placeholder;
           }
         );
@@ -406,6 +407,17 @@
         padding: 12px;
         border-radius: 10px;
         overflow: auto;
+        margin: 0;
+      }
+
+      pre code {
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        /* Prevent line highlighting inside code blocks */
+        line-height: 1.4;
+        white-space: pre;
+        font-family: "Lucida Console", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
       }
 
       a {
