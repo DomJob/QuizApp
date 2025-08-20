@@ -27,7 +27,7 @@ Question: Sort the numbers ascending
 [4] 15
 -----
 Source: Example Quiz | Multi-line question
-Question: Given the following variable:
+Question: Given the following variables:
 
 ```
 x = 2;
