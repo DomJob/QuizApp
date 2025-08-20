@@ -2,21 +2,21 @@
 
 This is a very simple quiz app to help you study stuff:
 
-- Simply download and open `index.html` in any modern browser (no local server required)
+- Simply download and open `index.html` in any modern browser (no local server required!)
 - Run the deployed app [here](https://quiz.qot.app/)
 
-## Quiz file format:
+## Quiz file format
 
-The format of quiz files is designed to be as simple as possible to allow LLMs to easily generate questions based on study material you give it (see prompt.txt for an example of the type of prompt I use)
+The format of quiz files is designed to be as simple as possible to allow LLMs to efficiently generate questions based on study material you give it. See prompt.txt for an example of the type of prompt I use that works well.
 
-Supported types of questions:
+### Supported types of questions:
 
-- Single-answer questions (rendered as a radio button)
+- Single-answer questions (rendered as radio buttons)
 - Multiple-answer questions (rendered as checkboxes)
 - Ordered list (rendered as list with elements you can drag-and-drop)
-- Term-definition mapping (rendered as a list of dropdown elements)
+- Term<->definition mapping (rendered as a list of dropdown elements)
 
-Each question are separated by 5 dashes. See example.quiz for an overview of the format
+Each question are separated by 5 dashes and their type is inferred from the given answers — see example.quiz for an overview of the format.
 
 ## Keyboard navigation
 
