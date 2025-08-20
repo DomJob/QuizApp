@@ -951,6 +951,9 @@
                 let draggedElement = null;
                 let longPressTimer = null;
                 let touchStartTime = 0;
+                let isTouchDevice = false;
+                let initialElementTop = 0;
+                let initialElementLeft = 0;
 
                 // Prevent text selection during drag
                 const preventTextSelection = (e) => {
@@ -963,10 +966,16 @@
                   const target = e.target.closest(".dnd-item");
                   if (!target) return;
                   
+                  isTouchDevice = true;
                   touchStartTime = Date.now();
                   startY = e.touches[0].clientY;
                   currentY = startY;
                   draggedElement = target;
+                  
+                  // Store initial position
+                  const rect = target.getBoundingClientRect();
+                  initialElementTop = rect.top;
+                  initialElementLeft = rect.left;
                   
                   // Start long press timer
                   longPressTimer = setTimeout(() => {
@@ -976,7 +985,7 @@
                       
                       // Create drag image
                       const clone = draggedElement.cloneNode(true);
-                      clone.style.position = "absolute";
+                      clone.style.position = "fixed";
                       clone.style.pointerEvents = "none";
                       clone.style.top = "-9999px";
                       clone.style.left = "-9999px";
@@ -985,6 +994,7 @@
                       clone.style.opacity = "0.8";
                       clone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
                       clone.style.transform = "rotate(5deg)";
+                      clone.style.zIndex = "9999";
                       document.body.appendChild(clone);
                       currentDragImage = clone;
                       
@@ -1003,11 +1013,11 @@
                   e.preventDefault();
                   currentY = e.touches[0].clientY;
                   
-                  // Move drag image
+                  // Move drag image to follow finger from initial position
                   if (currentDragImage) {
-                    const rect = draggedElement.getBoundingClientRect();
-                    currentDragImage.style.top = (rect.top + (currentY - startY)) + "px";
-                    currentDragImage.style.left = rect.left + "px";
+                    const offsetY = currentY - startY;
+                    currentDragImage.style.top = (initialElementTop + offsetY) + "px";
+                    currentDragImage.style.left = initialElementLeft + "px";
                   }
                   
                   // Update position in list
@@ -1049,6 +1059,9 @@
                   draggedElement = null;
                   startY = 0;
                   currentY = 0;
+                  isTouchDevice = false;
+                  initialElementTop = 0;
+                  initialElementLeft = 0;
                 };
 
                 const handleTouchCancel = () => {
@@ -1075,6 +1088,9 @@
                   draggedElement = null;
                   startY = 0;
                   currentY = 0;
+                  isTouchDevice = false;
+                  initialElementTop = 0;
+                  initialElementLeft = 0;
                 };
 
                 // Add touch event listeners to each item
@@ -1089,60 +1105,93 @@
                   item.addEventListener("dragstart", preventTextSelection);
                 });
 
-                // Mouse drag and drop for desktop
-                container.addEventListener("dragstart", (e) => {
+                // Mouse drag and drop for desktop (only when not on touch device)
+                const handleMouseDown = (e) => {
+                  if (isTouchDevice) return; // Skip if we're on a touch device
+                  
                   const target = e.target && e.target.closest(".dnd-item");
                   if (!target) return;
-                  target.classList.add("dragging");
-                  if (
-                    e.dataTransfer &&
-                    typeof e.dataTransfer.setDragImage === "function"
-                  ) {
-                    const clone = target.cloneNode(true);
-                    clone.style.position = "absolute";
+                  
+                  draggedElement = target;
+                  startY = e.clientY;
+                  currentY = startY;
+                  
+                  // Store initial position
+                  const rect = target.getBoundingClientRect();
+                  initialElementTop = rect.top;
+                  initialElementLeft = rect.left;
+                };
+
+                const handleMouseMove = (e) => {
+                  if (!draggedElement || isTouchDevice) return;
+                  
+                  if (!isDragging) {
+                    isDragging = true;
+                    draggedElement.classList.add("dragging");
+                    
+                    // Create drag image
+                    const clone = draggedElement.cloneNode(true);
+                    clone.style.position = "fixed";
                     clone.style.pointerEvents = "none";
                     clone.style.top = "-9999px";
                     clone.style.left = "-9999px";
-                    clone.style.width = target.offsetWidth + "px";
-                    clone.style.height = target.offsetHeight + "px";
-                    clone.style.opacity = "1";
+                    clone.style.width = draggedElement.offsetWidth + "px";
+                    clone.style.height = draggedElement.offsetHeight + "px";
+                    clone.style.opacity = "0.8";
                     clone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
+                    clone.style.transform = "rotate(5deg)";
+                    clone.style.zIndex = "9999";
                     document.body.appendChild(clone);
                     currentDragImage = clone;
-                    // Offset so cursor is near the handle
-                    e.dataTransfer.setDragImage(
-                      clone,
-                      16,
-                      Math.min(20, target.offsetHeight / 2)
-                    );
                   }
-                });
-                container.addEventListener("dragend", (e) => {
-                  const target = e.target && e.target.closest(".dnd-item");
-                  if (target) target.classList.remove("dragging");
-                  updateMapFromDom();
-                  // Recompute controls as answered-state may have changed
-                  renderControls();
-                  if (currentDragImage && currentDragImage.parentNode) {
-                    currentDragImage.parentNode.removeChild(currentDragImage);
-                    currentDragImage = null;
+                  
+                  currentY = e.clientY;
+                  
+                  // Move drag image to follow mouse from initial position
+                  if (currentDragImage) {
+                    const offsetY = currentY - startY;
+                    currentDragImage.style.top = (initialElementTop + offsetY) + "px";
+                    currentDragImage.style.left = initialElementLeft + "px";
                   }
-                });
-                container.addEventListener("dragover", (e) => {
-                  e.preventDefault();
-                  const dragging =
-                    container.querySelector(".dnd-item.dragging");
-                  if (!dragging) return;
-                  const afterElement = getDragAfterElement(
-                    container,
-                    e.clientY
-                  );
+                  
+                  // Update position in list
+                  const afterElement = getDragAfterElement(container, currentY);
                   if (afterElement == null) {
-                    container.appendChild(dragging);
+                    container.appendChild(draggedElement);
                   } else {
-                    container.insertBefore(dragging, afterElement);
+                    container.insertBefore(draggedElement, afterElement);
                   }
-                });
+                };
+
+                const handleMouseUp = () => {
+                  if (!draggedElement || isTouchDevice) return;
+                  
+                  if (isDragging) {
+                    isDragging = false;
+                    draggedElement.classList.remove("dragging");
+                    
+                    // Clean up drag image
+                    if (currentDragImage && currentDragImage.parentNode) {
+                      currentDragImage.parentNode.removeChild(currentDragImage);
+                      currentDragImage = null;
+                    }
+                    
+                    // Update state
+                    updateMapFromDom();
+                    renderControls();
+                  }
+                  
+                  draggedElement = null;
+                  startY = 0;
+                  currentY = 0;
+                  initialElementTop = 0;
+                  initialElementLeft = 0;
+                };
+
+                // Add mouse event listeners to container
+                container.addEventListener("mousedown", handleMouseDown);
+                document.addEventListener("mousemove", handleMouseMove);
+                document.addEventListener("mouseup", handleMouseUp);
               }
             } else {
               // Fallback: original dropdown UI

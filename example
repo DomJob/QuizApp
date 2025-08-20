@@ -27,15 +27,15 @@ Question: Sort the numbers ascending
 [4] 15
 -----
 Source: Example Quiz | Multi-line question
-Question: Given the following code:
+Question: Given the following variable:
 
 ```
-int a=2;
-int b=3;
-int c = a+b;
+x = 2;
+y = 3;
+z = a + b;
 ```
-Which boolean statement evaluates to true?
-[x] `c == 5`
-[ ] `c < 4`
-[ ] `c == -1`
-[ ] `c != 5`
+Which statement is true?
+[x] `z = 5`
+[ ] `z < 4`
+[ ] `z = -1`
+[ ] `z ≠ 5`
