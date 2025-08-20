@@ -504,6 +504,22 @@
         align-items: center;
         gap: 10px;
         user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        touch-action: pan-y;
+        cursor: grab;
+      }
+
+      .dnd-item:active {
+        cursor: grabbing;
+      }
+
+      .dnd-item.dragging {
+        opacity: 0.8;
+        transform: rotate(2deg);
+        z-index: 1000;
+        position: relative;
       }
 
       .dnd-handle {
@@ -516,6 +532,13 @@
         color: var(--muted);
         font-weight: 700;
         cursor: grab;
+        touch-action: none;
+      }
+
+      .dnd-item.dragging .dnd-handle {
+        cursor: grabbing;
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--accent);
       }
 
       .dnd-item.dragging {
@@ -919,10 +942,154 @@
 
               // Render items
               items.forEach((c) => container.appendChild(buildItem(c)));
-              //updateIndices();
 
               if (!revealed) {
                 let currentDragImage = null;
+                let isDragging = false;
+                let startY = 0;
+                let currentY = 0;
+                let draggedElement = null;
+                let longPressTimer = null;
+                let touchStartTime = 0;
+
+                // Prevent text selection during drag
+                const preventTextSelection = (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                };
+
+                // Touch event handlers for mobile drag and drop
+                const handleTouchStart = (e) => {
+                  const target = e.target.closest(".dnd-item");
+                  if (!target) return;
+                  
+                  touchStartTime = Date.now();
+                  startY = e.touches[0].clientY;
+                  currentY = startY;
+                  draggedElement = target;
+                  
+                  // Start long press timer
+                  longPressTimer = setTimeout(() => {
+                    if (draggedElement && !isDragging) {
+                      isDragging = true;
+                      draggedElement.classList.add("dragging");
+                      
+                      // Create drag image
+                      const clone = draggedElement.cloneNode(true);
+                      clone.style.position = "absolute";
+                      clone.style.pointerEvents = "none";
+                      clone.style.top = "-9999px";
+                      clone.style.left = "-9999px";
+                      clone.style.width = draggedElement.offsetWidth + "px";
+                      clone.style.height = draggedElement.offsetHeight + "px";
+                      clone.style.opacity = "0.8";
+                      clone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
+                      clone.style.transform = "rotate(5deg)";
+                      document.body.appendChild(clone);
+                      currentDragImage = clone;
+                      
+                      // Prevent text selection
+                      document.body.style.userSelect = "none";
+                      document.body.style.webkitUserSelect = "none";
+                      document.body.style.mozUserSelect = "none";
+                      document.body.style.msUserSelect = "none";
+                    }
+                  }, 300); // 300ms long press threshold
+                };
+
+                const handleTouchMove = (e) => {
+                  if (!isDragging || !draggedElement) return;
+                  
+                  e.preventDefault();
+                  currentY = e.touches[0].clientY;
+                  
+                  // Move drag image
+                  if (currentDragImage) {
+                    const rect = draggedElement.getBoundingClientRect();
+                    currentDragImage.style.top = (rect.top + (currentY - startY)) + "px";
+                    currentDragImage.style.left = rect.left + "px";
+                  }
+                  
+                  // Update position in list
+                  const afterElement = getDragAfterElement(container, currentY);
+                  if (afterElement == null) {
+                    container.appendChild(draggedElement);
+                  } else {
+                    container.insertBefore(draggedElement, afterElement);
+                  }
+                };
+
+                const handleTouchEnd = (e) => {
+                  if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                  }
+                  
+                  if (isDragging && draggedElement) {
+                    isDragging = false;
+                    draggedElement.classList.remove("dragging");
+                    
+                    // Clean up drag image
+                    if (currentDragImage && currentDragImage.parentNode) {
+                      currentDragImage.parentNode.removeChild(currentDragImage);
+                      currentDragImage = null;
+                    }
+                    
+                    // Restore text selection
+                    document.body.style.userSelect = "";
+                    document.body.style.webkitUserSelect = "";
+                    document.body.style.mozUserSelect = "";
+                    document.body.style.msUserSelect = "";
+                    
+                    // Update state
+                    updateMapFromDom();
+                    renderControls();
+                  }
+                  
+                  draggedElement = null;
+                  startY = 0;
+                  currentY = 0;
+                };
+
+                const handleTouchCancel = () => {
+                  if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                  }
+                  
+                  if (isDragging && draggedElement) {
+                    isDragging = false;
+                    draggedElement.classList.remove("dragging");
+                    
+                    if (currentDragImage && currentDragImage.parentNode) {
+                      currentDragImage.parentNode.removeChild(currentDragImage);
+                      currentDragImage = null;
+                    }
+                    
+                    document.body.style.userSelect = "";
+                    document.body.style.webkitUserSelect = "";
+                    document.body.style.mozUserSelect = "";
+                    document.body.style.msUserSelect = "";
+                  }
+                  
+                  draggedElement = null;
+                  startY = 0;
+                  currentY = 0;
+                };
+
+                // Add touch event listeners to each item
+                container.querySelectorAll(".dnd-item").forEach(item => {
+                  item.addEventListener("touchstart", handleTouchStart, { passive: false });
+                  item.addEventListener("touchmove", handleTouchMove, { passive: false });
+                  item.addEventListener("touchend", handleTouchEnd, { passive: false });
+                  item.addEventListener("touchcancel", handleTouchCancel, { passive: false });
+                  
+                  // Prevent text selection on long press
+                  item.addEventListener("selectstart", preventTextSelection);
+                  item.addEventListener("dragstart", preventTextSelection);
+                });
+
+                // Mouse drag and drop for desktop
                 container.addEventListener("dragstart", (e) => {
                   const target = e.target && e.target.closest(".dnd-item");
                   if (!target) return;
@@ -954,7 +1121,6 @@
                   const target = e.target && e.target.closest(".dnd-item");
                   if (target) target.classList.remove("dragging");
                   updateMapFromDom();
-                  //updateIndices();
                   // Recompute controls as answered-state may have changed
                   renderControls();
                   if (currentDragImage && currentDragImage.parentNode) {
