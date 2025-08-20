@@ -1,6 +1,9 @@
 # Quiz App
 
-This is a very simple quiz app to help you study stuff – simply download and open `quiz.html` in any modern browser (no local server required)
+This is a very simple quiz app to help you study stuff:
+
+- Simply download and open `index.html` in any modern browser (no local server required)
+- Run the deployed app [here](https://quiz.qot.app/)
 
 ## Quiz file format:
 
