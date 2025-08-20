@@ -1,13 +1,6 @@
 # Quiz App
 
-This is a very simple quiz app to help you study stuff
-
-## Access
-
-Two options:
-
-- Download and open `index.html` in any modern browser (no local server required)
-- Open the Github page [here](TODO)
+This is a very simple quiz app to help you study stuff – simply download and open `quiz.html` in any modern browser (no local server required)
 
 ## Quiz file format:
 
