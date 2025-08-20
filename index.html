@@ -417,7 +417,8 @@
         /* Prevent line highlighting inside code blocks */
         line-height: 1.4;
         white-space: pre;
-        font-family: "Lucida Console", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+        font-family: "Lucida Console", "SF Mono", Monaco, "Cascadia Code",
+          "Roboto Mono", Consolas, "Courier New", monospace;
       }
 
       a {
@@ -603,7 +604,7 @@
           revealed: new Set(),
         };
 
-        const DEFAULT_URL = "https://quiz.qot.app/example.quiz";
+        const DEFAULT_URL = "https://quiz.qot.app/example";
 
         /** DOM refs */
         const refs = {};
@@ -1407,7 +1408,9 @@
               refs.spinner.classList.remove("hidden");
               const response = await fetch(url, { cache: "no-cache" });
               if (!response.ok)
-                throw new Error("HTTP " + response.status + " " + response.statusText);
+                throw new Error(
+                  "HTTP " + response.status + " " + response.statusText
+                );
               const text = await response.text();
               startQuizFromText(String(text || ""));
               if (refs.uploadStatus) refs.uploadStatus.textContent = "";
@@ -1415,7 +1418,8 @@
               refs.spinner.classList.add("hidden");
               if (refs.uploadStatus)
                 refs.uploadStatus.textContent =
-                  "Failed to fetch URL. " + (err && err.message ? err.message : "");
+                  "Failed to fetch URL. " +
+                  (err && err.message ? err.message : "");
             }
           }
 
@@ -1585,7 +1589,7 @@
               class="url-input"
               type="url"
               inputmode="url"
-              placeholder="https://quiz.qot.app/example.quiz"
+              placeholder="https://quiz.qot.app/example"
               aria-label="Quiz file URL"
             />
             <button id="urlLoadBtn" type="button">Load</button>
@@ -1625,12 +1629,12 @@
         </div>
       </div>
       <div id="results" class="card hidden"></div>
-              <a
-          href="https://github.com/DomJob/QuizApp"
-          target="_blank"
-          class="github-link"
-          aria-label="View on GitHub"
-        >
+      <a
+        href="https://github.com/DomJob/QuizApp"
+        target="_blank"
+        class="github-link"
+        aria-label="View on GitHub"
+      >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path
             d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.13 6.839 9.458.5.092.682-.217.682-.48 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.465-1.11-1.465-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.27.098-2.647 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.026 2.747-1.026.546 1.377.202 2.394.1 2.647.64.7 1.028 1.595 1.028 2.688 0 3.848-2.335 4.708-4.554 4.955.354.306.673.917.673 1.857 0 1.336-.012 2.415-.012 2.747 0 .267.18.586.688.48C19.135 20.137 22 16.427 22 12c0-5.523-4.477-10-10-10z"

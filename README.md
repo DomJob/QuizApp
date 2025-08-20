@@ -16,7 +16,7 @@ The format of quiz files is designed to be as simple as possible to allow LLMs t
 - Ordered list (rendered as list with elements you can drag-and-drop)
 - Term<->definition mapping (rendered as a list of dropdown elements)
 
-Each question are separated by 5 dashes and their type is inferred from the given answers — see example.quiz for an overview of the format.
+Each question are separated by 5 dashes and their type is inferred from the given answers — see `[example](./example)` for an overview of the format.
 
 ## Keyboard navigation
 
