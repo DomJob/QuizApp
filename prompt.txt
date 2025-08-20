@@ -1,0 +1,47 @@
+Review the attached study material and create meaningful quiz questions to test the quiz taker's knowledge, such that a user who gets all questions right meets the following objectives:
+
+* ...
+* ...
+
+Your output must have the following format in a multi-line code block. Each question is separated by five dashes.
+
+For the source, add "..."
+
+Here is the format:
+
+```
+Source: <source>
+Question: <question with multiple answers>
+[ ] Wrong answer
+[x] Right answer
+[x] Other right answer
+[ ] Other wrong answer
+-----
+Source: <source>
+Question: <question with only one answer>
+[ ] Wrong answer
+[x] Right answer
+[ ] Other wrong answer
+[ ] Other wrong answer
+-----
+Source: <source>
+Question: <what is the correct order of steps for...>
+[1] First
+[2] Second
+[3] Third
+[4] Fourth
+-----
+Source: <source>
+Question: <label the terms correctly...>
+[label1] definition1
+[label2] definition2
+[label3] definition3
+[label4] definition4
+```
+
+Further instructions you MUST follow:
+* Leave the source as "<source>".
+* Do not create questions where all the available choices are correct.
+* Make sure to have a wide coverage with accurate questions and answers.
+* Some questions may have as little as 3 possible choices and as much as 6.
+* Be creative yet thorough in designing questions.
