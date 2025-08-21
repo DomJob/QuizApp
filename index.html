@@ -438,6 +438,24 @@
         transform: translateY(3px);
       }
 
+      .setting-item {
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #ffffff;
+        transition: border-color 0.15s ease, background 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .setting-item:hover {
+        border-color: rgba(79, 70, 229, 0.35);
+        background: rgba(79, 70, 229, 0.02);
+      }
+
+      .setting-item input[type="checkbox"]:checked + div {
+        color: var(--accent);
+      }
+
       /* Better-looking upload dropzone */
       .dropzone {
         border: 2px dashed var(--border);
@@ -618,6 +636,7 @@
         /** Global quiz state */
         const state = {
           questions: [],
+          rawQuestions: [],
           currentIndex: 0,
           // Stores responses per question index
           // single -> number (choice index)
@@ -675,9 +694,20 @@
           return distinct.sort((a, b) => a.localeCompare(b));
         }
 
-        function buildQuizData(raw) {
-          const shuffledQuestions = shuffle(raw);
-          return shuffledQuestions.map((q, idx) => {
+        function buildQuizData(raw, shouldShuffle = true) {
+          let processedQuestions;
+          if (shouldShuffle) {
+            processedQuestions = shuffle(raw);
+          } else {
+            // Sort alphabetically by source property
+            processedQuestions = raw.slice().sort((a, b) => {
+              const sourceA = (a.source || "").toLowerCase();
+              const sourceB = (b.source || "").toLowerCase();
+              return sourceA.localeCompare(sourceB);
+            });
+          }
+          
+          return processedQuestions.map((q, idx) => {
             const type = detectType(q);
             const choices = shuffle(
               q.choices.map((c, i) => ({ ...c, originalIndex: i }))
@@ -1349,23 +1379,19 @@
 
         function startQuizFromText(text) {
           const spinner = $("#spinner");
-          const quiz = $("#quiz");
+          const settings = $("#settings");
           const uploader = $("#uploader");
           spinner.classList.remove("hidden");
-          quiz.classList.add("hidden");
+          settings.classList.add("hidden");
           try {
             const rawQuestions = parseQuestionsFile(text);
             if (!rawQuestions || !rawQuestions.length) {
               throw new Error("No questions found in file");
             }
-            state.questions = buildQuizData(rawQuestions);
-            state.currentIndex = 0;
-            state.responses = new Map();
-            state.revealed = new Set();
-            ensureResponseFor(0);
-            render();
+            // Store raw questions for later processing based on settings
+            state.rawQuestions = rawQuestions;
             if (uploader) uploader.classList.add("hidden");
-            quiz.classList.remove("hidden");
+            settings.classList.remove("hidden");
           } catch (err) {
             console.error(err);
             const statusEl = $("#uploadStatus");
@@ -1376,6 +1402,19 @@
           } finally {
             spinner.classList.add("hidden");
           }
+        }
+
+        function startQuizWithSettings() {
+          const shouldShuffle = refs.shuffleQuestions.checked;
+          state.questions = buildQuizData(state.rawQuestions, shouldShuffle);
+          state.currentIndex = 0;
+          state.responses = new Map();
+          state.revealed = new Set();
+          ensureResponseFor(0);
+          
+          refs.settings.classList.add("hidden");
+          refs.quiz.classList.remove("hidden");
+          render();
         }
 
         function getQuestionCorrectness(q, resp) {
@@ -1633,10 +1672,24 @@
           refs.spinner = $("#spinner");
           refs.urlInput = $("#urlInput");
           refs.urlLoadBtn = $("#urlLoadBtn");
+          refs.settings = $("#settings");
+          refs.shuffleQuestions = $("#shuffleQuestions");
+          refs.backToUploadBtn = $("#backToUploadBtn");
+          refs.startQuizBtn = $("#startQuizBtn");
 
           refs.prevBtn.addEventListener("click", onPrev);
           refs.nextBtn.addEventListener("click", onNext);
           refs.revealBtn.addEventListener("click", onReveal);
+
+          // Settings panel event listeners
+          refs.backToUploadBtn.addEventListener("click", () => {
+            refs.settings.classList.add("hidden");
+            refs.uploader.classList.remove("hidden");
+          });
+          
+          refs.startQuizBtn.addEventListener("click", () => {
+            startQuizWithSettings();
+          });
 
           // Hide spinner initially; show uploader by default
           if (refs.spinner) refs.spinner.classList.add("hidden");
@@ -1886,6 +1939,32 @@
           <div class="right-controls">
             <div id="status" class="status"></div>
             <button id="nextBtn" type="button">Next</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings" class="card hidden">
+        <div class="card-header">
+          <div class="source">
+            <span class="dot"></span>Quiz Settings
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display: grid; gap: 16px;">
+            <label class="setting-item" style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="shuffleQuestions" checked style="margin-top: 2px;">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; margin-bottom: 4px;">Randomize the order of questions</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="left-controls">
+            <button id="backToUploadBtn" class="secondary" type="button">←</button>
+          </div>
+          <div class="right-controls">
+            <button id="startQuizBtn" type="button">Start</button>
           </div>
         </div>
       </div>
