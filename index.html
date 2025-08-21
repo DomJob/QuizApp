@@ -269,8 +269,8 @@
         display: flex;
         align-items: flex-start;
         gap: 10px;
-        transition: border-color 0.15s ease, background 0.15s ease,
-          box-shadow 0.15s ease;
+        transition: border-color 1s ease, background 0.15s ease,
+          box-shadow 0.15s ease, transform 0.12s ease;
       }
 
       .choice:hover {
@@ -509,6 +509,7 @@
         -ms-user-select: none;
         touch-action: pan-y;
         cursor: grab;
+        will-change: transform;
       }
 
       .dnd-item:active {
@@ -517,7 +518,6 @@
 
       .dnd-item.dragging {
         opacity: 0.8;
-        transform: rotate(2deg);
         z-index: 1000;
         position: relative;
       }
@@ -940,6 +940,48 @@
                 ).element;
               };
 
+              // FLIP helpers to animate siblings when order changes
+              const capturePositions = () => {
+                const map = new Map();
+                container.querySelectorAll(".dnd-item").forEach((el) => {
+                  map.set(el, el.getBoundingClientRect().top);
+                });
+                return map;
+              };
+
+              const playReorderAnimation = (prevPositions, excludeEl) => {
+                const children = Array.from(
+                  container.querySelectorAll(".dnd-item")
+                );
+                const toAnimate = [];
+                children.forEach((el) => {
+                  if (el === excludeEl) return;
+                  const prevTop = prevPositions.get(el);
+                  if (prevTop == null) return;
+                  const newTop = el.getBoundingClientRect().top;
+                  const delta = prevTop - newTop;
+                  if (delta !== 0) {
+                    // Ensure the initial transform is applied without transition
+                    const prevTransition = el.style.transition;
+                    el.style.transition = "none";
+                    el.style.transform = `translateY(${delta}px)`;
+                    // Force reflow so the browser applies the transform immediately
+                    void el.offsetHeight;
+                    // Restore transition so the following change animates
+                    el.style.transition = prevTransition;
+                    toAnimate.push(el);
+                  }
+                });
+                if (toAnimate.length) {
+                  // Next frame: return to identity to trigger transition
+                  requestAnimationFrame(() => {
+                    toAnimate.forEach((el) => {
+                      el.style.transform = "";
+                    });
+                  });
+                }
+              };
+
               // Render items
               items.forEach((c) => container.appendChild(buildItem(c)));
 
@@ -993,7 +1035,6 @@
                       clone.style.height = draggedElement.offsetHeight + "px";
                       clone.style.opacity = "0.8";
                       clone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
-                      clone.style.transform = "rotate(5deg)";
                       clone.style.zIndex = "9999";
                       document.body.appendChild(clone);
                       currentDragImage = clone;
@@ -1021,12 +1062,14 @@
                   }
                   
                   // Update position in list
+                  const prevPositions = capturePositions();
                   const afterElement = getDragAfterElement(container, currentY);
                   if (afterElement == null) {
                     container.appendChild(draggedElement);
                   } else {
                     container.insertBefore(draggedElement, afterElement);
                   }
+                  playReorderAnimation(prevPositions, draggedElement);
                 };
 
                 const handleTouchEnd = (e) => {
@@ -1139,7 +1182,6 @@
                     clone.style.height = draggedElement.offsetHeight + "px";
                     clone.style.opacity = "0.8";
                     clone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
-                    clone.style.transform = "rotate(5deg)";
                     clone.style.zIndex = "9999";
                     document.body.appendChild(clone);
                     currentDragImage = clone;
@@ -1155,12 +1197,14 @@
                   }
                   
                   // Update position in list
+                  const prevPositions = capturePositions();
                   const afterElement = getDragAfterElement(container, currentY);
                   if (afterElement == null) {
                     container.appendChild(draggedElement);
                   } else {
                     container.insertBefore(draggedElement, afterElement);
                   }
+                  playReorderAnimation(prevPositions, draggedElement);
                 };
 
                 const handleMouseUp = () => {
@@ -1617,9 +1661,8 @@
           async function loadFromUrl(inputUrl) {
             const raw = String(inputUrl || "").trim();
             const url = raw || DEFAULT_URL;
-            if (refs.uploadStatus)
-              refs.uploadStatus.textContent = "Fetching " + url + "…";
             try {
+              refs.uploader.classList.add("hidden");
               refs.spinner.classList.remove("hidden");
               const response = await fetch(url, { cache: "no-cache" });
               if (!response.ok)
@@ -1627,6 +1670,7 @@
                   "HTTP " + response.status + " " + response.statusText
                 );
               const text = await response.text();
+              await new Promise((resolve) => setTimeout(resolve, 3000));
               startQuizFromText(String(text || ""));
               if (refs.uploadStatus) refs.uploadStatus.textContent = "";
             } catch (err) {
@@ -1760,10 +1804,12 @@
 
   <body>
     <div class="app">
-      <div id="spinner" class="spinner-wrap hidden">
+
+      <div id="spinner" class="card spinner-wrap hidden">
         <div class="spinner" aria-hidden="true"></div>
         <span class="sr-only">Loading…</span>
       </div>
+
       <div id="uploader" class="card">
         <div class="card-header">
           <div class="source">
@@ -1817,6 +1863,7 @@
           </div>
         </div>
       </div>
+
       <div id="quiz" class="card hidden">
         <div class="card-header">
           <div id="source" class="source">
