@@ -121,6 +121,7 @@
             text: parseMarkdown(c.text),
             answer: c.answer,
           })),
+          originalBlock: block.trim(), // Store the original block text
         };
       }
 
@@ -786,6 +787,55 @@
           }
           renderChoices();
           updateRevealButton();
+        }
+
+        function onCopyToClipboard() {
+          const currentQuestion = state.questions[state.currentIndex];
+          const rawQuestion = state.rawQuestions.find(q => 
+            q.source === currentQuestion.source && 
+            q.question === currentQuestion.question
+          );
+          
+          if (rawQuestion && rawQuestion.originalBlock) {
+            // Add five dashes at the end
+            const blockText = rawQuestion.originalBlock + "\n-----";
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(blockText).then(() => {
+              // Show feedback
+              const originalText = refs.clipboardBtn.textContent;
+              refs.clipboardBtn.textContent = "✓";
+              refs.clipboardBtn.style.background = "var(--green)";
+              refs.clipboardBtn.style.color = "white";
+              
+              setTimeout(() => {
+                refs.clipboardBtn.textContent = originalText;
+                refs.clipboardBtn.style.background = "";
+                refs.clipboardBtn.style.color = "";
+              }, 1000);
+            }).catch(err => {
+              console.error('Failed to copy to clipboard:', err);
+              // Fallback for older browsers
+              const textArea = document.createElement('textarea');
+              textArea.value = blockText;
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand('copy');
+              textArea.parentNode.removeChild(textArea);
+              
+              // Show feedback
+              const originalText = refs.clipboardBtn.textContent;
+              refs.clipboardBtn.textContent = "✓";
+              refs.clipboardBtn.style.background = "var(--green)";
+              refs.clipboardBtn.style.color = "white";
+              
+              setTimeout(() => {
+                refs.clipboardBtn.textContent = originalText;
+                refs.clipboardBtn.style.background = "";
+                refs.clipboardBtn.style.color = "";
+              }, 1000);
+            });
+          }
         }
 
         function updateRevealButton() {
@@ -1661,6 +1711,7 @@
           refs.prevBtn = $("#prevBtn");
           refs.nextBtn = $("#nextBtn");
           refs.revealBtn = $("#revealBtn");
+          refs.clipboardBtn = $("#clipboardBtn");
           refs.status = $("#status");
           refs.results = $("#results");
           refs.quiz = $("#quiz");
@@ -1680,6 +1731,7 @@
           refs.prevBtn.addEventListener("click", onPrev);
           refs.nextBtn.addEventListener("click", onNext);
           refs.revealBtn.addEventListener("click", onReveal);
+          refs.clipboardBtn.addEventListener("click", onCopyToClipboard);
 
           // Settings panel event listeners
           refs.backToUploadBtn.addEventListener("click", () => {
@@ -1929,6 +1981,9 @@
         </div>
         <div class="controls">
           <div class="left-controls">
+            <button id="clipboardBtn" class="secondary" type="button" title="Copy question text to clipboard">
+              📋
+            </button>
             <button id="prevBtn" class="secondary" type="button">
               Previous
             </button>
