@@ -1670,7 +1670,6 @@
                   "HTTP " + response.status + " " + response.statusText
                 );
               const text = await response.text();
-              await new Promise((resolve) => setTimeout(resolve, 3000));
               startQuizFromText(String(text || ""));
               if (refs.uploadStatus) refs.uploadStatus.textContent = "";
             } catch (err) {
