@@ -798,7 +798,7 @@
           
           if (rawQuestion && rawQuestion.originalBlock) {
             // Add five dashes at the end
-            const blockText = rawQuestion.originalBlock + "\n-----";
+            const blockText = rawQuestion.originalBlock + "\n-----\n";
             
             // Copy to clipboard
             navigator.clipboard.writeText(blockText).then(() => {
