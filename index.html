@@ -845,9 +845,13 @@
 
         function renderHeader() {
           const q = state.questions[state.currentIndex];
+          formattedSource = q.source || "";
+          if (refs.removeNumbersFromSources && refs.removeNumbersFromSources.checked) {
+            formattedSource = formattedSource.replace(/[0-9]+\.\s/g, "");
+          }
           loadHtmlInto(
             refs.source,
-            `<span class="dot"></span>${escapeHtml(q.source || "")}`
+            `<span class="dot"></span>${escapeHtml(formattedSource)}`
           );
           refs.progress.textContent = `Question ${state.currentIndex + 1} of ${
             state.questions.length
@@ -1725,6 +1729,7 @@
           refs.urlLoadBtn = $("#urlLoadBtn");
           refs.settings = $("#settings");
           refs.shuffleQuestions = $("#shuffleQuestions");
+          refs.removeNumbersFromSources = $("#removeNumbersFromSources");
           refs.backToUploadBtn = $("#backToUploadBtn");
           refs.startQuizBtn = $("#startQuizBtn");
 
@@ -2010,6 +2015,12 @@
               <input type="checkbox" id="shuffleQuestions" checked style="margin-top: 2px;">
               <div style="flex: 1;">
                 <div style="font-weight: 600; margin-bottom: 4px;">Randomize the order of questions</div>
+              </div>
+            </label>
+            <label class="setting-item" style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="removeNumbersFromSources" checked style="margin-top: 2px;">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; margin-bottom: 4px;">Clean up source display</div>
               </div>
             </label>
           </div>
