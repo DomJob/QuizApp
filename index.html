@@ -695,16 +695,63 @@
           return distinct.sort((a, b) => a.localeCompare(b));
         }
 
+        function naturalSort(a, b) {
+          // Split by pipe and trim whitespace
+          const partsA = a.split('|').map(part => part.trim());
+          const partsB = b.split('|').map(part => part.trim());
+          
+          // Compare each part
+          const maxLength = Math.max(partsA.length, partsB.length);
+          
+          for (let i = 0; i < maxLength; i++) {
+            const partA = partsA[i] || '';
+            const partB = partsB[i] || '';
+            
+            // Extract numbers from the beginning of each part
+            const numMatchA = partA.match(/^(\d+)/);
+            const numMatchB = partB.match(/^(\d+)/);
+            
+            if (numMatchA && numMatchB) {
+              // Both parts start with numbers, compare numerically
+              const numA = parseInt(numMatchA[1], 10);
+              const numB = parseInt(numMatchB[1], 10);
+              if (numA !== numB) {
+                return numA - numB;
+              }
+              // Numbers are equal, compare the rest of the part
+              const restA = partA.substring(numMatchA[1].length);
+              const restB = partB.substring(numMatchB[1].length);
+              if (restA !== restB) {
+                return restA.localeCompare(restB);
+              }
+            } else if (numMatchA) {
+              // Only partA starts with a number, it comes first
+              return -1;
+            } else if (numMatchB) {
+              // Only partB starts with a number, it comes first
+              return 1;
+            } else {
+              // Neither part starts with a number, compare lexicographically
+              if (partA !== partB) {
+                return partA.localeCompare(partB);
+              }
+            }
+          }
+          
+          // All parts are equal
+          return 0;
+        }
+
         function buildQuizData(raw, shouldShuffle = true) {
           let processedQuestions;
           if (shouldShuffle) {
             processedQuestions = shuffle(raw);
           } else {
-            // Sort alphabetically by source property
+            // Sort naturally by source property (handles numerical sorting)
             processedQuestions = raw.slice().sort((a, b) => {
               const sourceA = (a.source || "").toLowerCase();
               const sourceB = (b.source || "").toLowerCase();
-              return sourceA.localeCompare(sourceB);
+              return naturalSort(sourceA, sourceB);
             });
           }
           
