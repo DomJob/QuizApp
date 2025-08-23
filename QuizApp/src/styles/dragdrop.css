@@ -1,0 +1,58 @@
+/* Drag-and-drop ordering styles */
+.dnd-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  touch-action: pan-y;
+  cursor: grab;
+  will-change: transform;
+}
+
+.dnd-item:active {
+  cursor: grabbing;
+}
+
+.dnd-item.dragging {
+  opacity: 0.8;
+  z-index: 1000;
+  position: relative;
+}
+
+.dnd-handle {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--muted);
+  font-weight: 700;
+  cursor: grab;
+  touch-action: none;
+}
+
+.dnd-item.dragging .dnd-handle {
+  cursor: grabbing;
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--accent);
+}
+
+.dnd-item.dragging {
+  opacity: 1;
+}
+
+.dnd-index {
+  min-width: 28px;
+  height: 24px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
