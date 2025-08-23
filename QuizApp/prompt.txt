@@ -1,0 +1,3 @@
+Hello Claude. At the root of the workspace you will find quiz-v1.html, which is the v1 of my multi-feature Quiz app. Please analyze it thoroughly for a list of all its features and how it works. I want you to take the existing react vite typescript boilerplate code and recreate the app in it, respecting React code and guidelines. Take your time, use a todo list, do everything correctly. I also want you to have wide unit test coverage for .ts and .tsx files to make sure everything works as expected easily.
+
+Recreate the UI from quiz-v1.html as is, with proper separation of .css and .tsx files. Make sure everything works. You may install node packages but please stick to popular packages with a highly valued reputation.
