@@ -54,7 +54,7 @@
           return `<pre><code${langClass}>${escaped}</code></pre>`;
         });
 
-        return text;
+        return escapeHtml(text);
       }
 
       function parseQuestionBlock(block) {
