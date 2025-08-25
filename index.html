@@ -12,11 +12,19 @@
           .replace(/"/g, "&quot;")
           .replace(/'/g, "&#39;");
       }
+      function unescapeHtml(text) {
+        return String(text)
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'");
+      }
 
       function parseMarkdown(input) {
         if (!input) return "";
 
-        let text = String(input).replace(/\r\n/g, "\n");
+        let text = input.replace(/\r\n/g, "\n");
 
         // Extract fenced code blocks to placeholders to avoid formatting inside them
         const codeBlocks = [];
@@ -29,11 +37,12 @@
             return placeholder;
           }
         );
+        text = escapeHtml(text);
 
         // Inline code
         text = text.replace(
           /`([^`]+)`/g,
-          (m, code) => `<code>${escapeHtml(code)}</code>`
+          (m, code) => `<code>${code}</code>`
         );
 
         // Bold
@@ -54,7 +63,7 @@
           return `<pre><code${langClass}>${escaped}</code></pre>`;
         });
 
-        return escapeHtml(text);
+        return text;
       }
 
       function parseQuestionBlock(block) {
